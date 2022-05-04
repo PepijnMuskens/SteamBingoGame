@@ -5,6 +5,7 @@ namespace SteamBingoGame.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [EnableCors("CorsPolicy")]
     public class LobbyController : ControllerBase
     {
         private readonly ILogger<LobbyController> _logger;
@@ -15,13 +16,15 @@ namespace SteamBingoGame.Controllers
         }
 
         [EnableCors("CorsPolicy")]
-        [HttpPost("CreateLobby")]
+        [HttpGet("CreateLobby")]
         public Lobby CreateLobby(int id)
         {
-            Lobby lobby = new Lobby(id);
+            Random random = new Random();
+            
+            Lobby lobby = new Lobby(random.Next(1000, 10000), id);
             while (Main.LobbyContainer.CheckId(lobby))
             {
-                lobby = new Lobby(id);
+                lobby = new Lobby(random.Next(1000, 10000),id);
             }
             Main.LobbyContainer.Lobbys.Add(lobby);
             return lobby;
@@ -35,12 +38,22 @@ namespace SteamBingoGame.Controllers
         }
 
         [EnableCors("CorsPolicy")]
-        [HttpPost("AddPlayer")]
-        public Lobby AddPlayer(int lobbyid, int playerid)
+        [HttpGet("AddPlayer")]
+        public Lobby AddPlayer(int lobbyid, long playerid)
         {
             Lobby lobby = Main.LobbyContainer.Lobbys.Find(l => l.Id == lobbyid);
             if (lobby == null) return null;
             lobby.AddPlayer(new Player(playerid, "bob"));
+            return lobby;
+        }
+
+        [EnableCors("CorsPolicy")]
+        [HttpGet("StartGame")]
+        public async Task<Lobby> StartGame(int lobbyid)
+        {
+            Lobby lobby = Main.LobbyContainer.Lobbys.Find(l => l.Id == lobbyid);
+            if (lobby == null) return null;
+            await lobby.StartGame();
             return lobby;
         }
     }

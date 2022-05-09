@@ -23,7 +23,7 @@ namespace SteamBingoGame.Controllers
         [HttpGet(Name = "GetWeatherForecast")]
         public Lobby Get(int id)
         {
-            return new Lobby(id,2);
+            return new Lobby(2);
         }
     }
 }

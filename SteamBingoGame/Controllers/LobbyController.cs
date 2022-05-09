@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using MySql.Data.MySqlClient;
 
 namespace SteamBingoGame.Controllers
 {
@@ -9,24 +10,21 @@ namespace SteamBingoGame.Controllers
     public class LobbyController : ControllerBase
     {
         private readonly ILogger<LobbyController> _logger;
+        private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
+        private MySqlConnection connection;
+        private string query;
 
         public LobbyController(ILogger<LobbyController> logger)
         {
             _logger = logger;
+            connection = new MySqlConnection(connectionString);
         }
 
         [EnableCors("CorsPolicy")]
         [HttpGet("CreateLobby")]
         public Lobby CreateLobby(int id)
         {
-            Random random = new Random();
-            
-            Lobby lobby = new Lobby(random.Next(1000, 10000), id);
-            while (Main.LobbyContainer.CheckId(lobby))
-            {
-                lobby = new Lobby(random.Next(1000, 10000),id);
-            }
-            Main.LobbyContainer.Lobbys.Add(lobby);
+            Lobby lobby = new Lobby(id);
             return lobby;
         }
 
@@ -34,16 +32,65 @@ namespace SteamBingoGame.Controllers
         [HttpGet("GetLobby")]
         public Lobby GetLobby(int id)
         {
-            return Main.LobbyContainer.Lobbys.Find(l => l.Id == id);
+            try
+            {
+                
+                connection.Open();
+                query = $"SELECT * FROM `Lobby` WHERE Id = {id}";
+                var cmd = new MySqlCommand(query, connection);
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    Lobby lobby = new Lobby(
+                        reader.GetInt32(0),
+                        reader.GetInt32(2),
+                        reader.GetBoolean(1));
+                    connection.Close();
+                    return lobby;
+                }
+            }
+            catch
+            {
+                
+            }
+            connection.Close();
+            return null;
         }
 
         [EnableCors("CorsPolicy")]
         [HttpGet("AddPlayer")]
         public Lobby AddPlayer(int lobbyid, long playerid)
         {
-            Lobby lobby = Main.LobbyContainer.Lobbys.Find(l => l.Id == lobbyid);
+            Lobby lobby = GetLobby(lobbyid);
+            Player player = new Player(0,"");
             if (lobby == null) return null;
-            lobby.AddPlayer(new Player(playerid, "bob"));
+            try
+            {
+                connection.Open();
+                query = $"SELECT * FROM `Player` WHERE SteamId = {playerid}";
+                var cmd = new MySqlCommand(query, connection);
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    player = new Player(
+                        reader.GetInt64(0),
+                        reader.GetString(1));
+                }
+                if (player.Name != "")
+                {
+                    lobby.AddPlayer(player);
+                    query = $"INSERT INTO `LobbyPlayer`(`LobbyId`, `PlayerId`) VALUES ({lobby.Id},{player.SteamId})";
+                    var cmd2 = new MySqlCommand(query, connection);
+                    cmd2.ExecuteScalar();
+                }
+
+
+            }
+            catch
+            {
+
+            }
+            
             return lobby;
         }
 

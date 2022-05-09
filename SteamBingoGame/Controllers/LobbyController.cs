@@ -80,6 +80,8 @@ namespace SteamBingoGame.Controllers
                 {
                     lobby.AddPlayer(player);
                     query = $"INSERT INTO `LobbyPlayer`(`LobbyId`, `PlayerId`) VALUES ({lobby.Id},{player.SteamId})";
+                    connection.Close();
+                    connection.Open();
                     var cmd2 = new MySqlCommand(query, connection);
                     cmd2.ExecuteScalar();
                 }
@@ -90,7 +92,7 @@ namespace SteamBingoGame.Controllers
             {
 
             }
-            
+            connection.Close();
             return lobby;
         }
 

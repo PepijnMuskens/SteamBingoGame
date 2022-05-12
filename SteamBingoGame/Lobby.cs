@@ -7,11 +7,11 @@ namespace SteamBingoGame
     public class Lobby
     {
         public int Id { get; set; }
-        public bool Open { get; private set; }
-        public List<Player> Players { get; private set; }
-        public int ChallengeListId { get; private set; }
-        public Challengelist Challengelist { get; private set; }
-        public List<List<Challenge>> Board { get; private set; }
+        public bool Open { get; set; }
+        public List<Player> Players { get; set; }
+        public int ChallengeListId { get; set; }
+        public Challengelist Challengelist { get; set; }
+        public List<List<Challenge>> Board { get; set; }
 
         private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
         private MySqlConnection connection;
@@ -83,7 +83,6 @@ namespace SteamBingoGame
             if (Players.Find(p => p.SteamId == player.SteamId) != null) return 0;
             if (Players.Find(p => p.Name == player.Name) != null) return -1;
             if (!Open) return -2;
-            if(!player.CheckSteamid()) return -3;
             Players.Add(player);
             return 1;
         }

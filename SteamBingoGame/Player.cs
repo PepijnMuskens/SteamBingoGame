@@ -1,9 +1,13 @@
-﻿namespace SteamBingoGame
+﻿using Newtonsoft.Json.Linq;
+using System.Net;
+
+namespace SteamBingoGame
 {
     public class Player
     {
-        public long SteamId { get; set; }
+        public string SteamId { get; set; }
         public string Name { get; set; }
+        public string Pic { get; set; }
         public Dictionary<string, double> BeginStats;
         public Dictionary<string, double> Stats;
 
@@ -11,7 +15,7 @@
         private bool ValidId = false;
         private bool Loading = true;
 
-        public Player(long steamid, string name)
+        public Player(string steamid, string name)
         {
             SteamId = steamid;
             Name = name;
@@ -19,15 +23,44 @@
             Stats = new Dictionary<string, double>();
         }
 
-        public bool CheckSteamid()
+        public async Task<bool> CheckSteamid()
         {
-            Loading = true;
-            GetStatsString();
-            while (Loading)
+            try
+            {
+                HttpClient client = new HttpClient();
+                string response = await client.GetStringAsync("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=B28FAD6C2B1A54EA2342EA465206F5A7&steamids=" + SteamId);
+                JObject data = JObject.Parse(response);
+                int test = (int)data.SelectToken("response.players[0].profilestate");
+                if (test == 1)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                
+            }
+            return false;
+        }
+        public async Task<bool> GetPic()
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                string response = await client.GetStringAsync("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=B28FAD6C2B1A54EA2342EA465206F5A7&steamids=" + SteamId);
+                JObject data = JObject.Parse(response);
+                string test = (string)data.SelectToken("response.players[0].avatarfull");
+                if (test != "")
+                {
+                    Pic = test;
+                    return true;
+                }
+            }
+            catch
             {
 
             }
-            return ValidId;
+            return false;
         }
 
         public async Task<string> GetStatsString()
@@ -36,6 +69,7 @@
             {
                 HttpClient client = new HttpClient();
                 string response = await client.GetStringAsync(Url + SteamId);
+                
                 ValidId = true;
                 Loading = false;
                 return response;

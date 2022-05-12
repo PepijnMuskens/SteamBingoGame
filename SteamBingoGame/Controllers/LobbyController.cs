@@ -69,7 +69,7 @@ namespace SteamBingoGame.Controllers
                 while (reader.Read())
                 {
                     Player player = new Player(reader.GetString(0), reader.GetString(1));
-                    player.Pic = reader.GetString(2);
+                    player.Pic = (byte[])reader.GetValue(2);
                     players.Add(player);
                 }
             }
@@ -85,6 +85,7 @@ namespace SteamBingoGame.Controllers
         [HttpGet("AddPlayer")]
         public Lobby AddPlayer(int lobbyid, long playerid)
         {
+            int id = 0;
             Lobby lobby = GetLobby(lobbyid);
             Player player = new Player("","");
             if (lobby == null) return null;
@@ -99,11 +100,12 @@ namespace SteamBingoGame.Controllers
                     player = new Player(
                         reader.GetString(0),
                         reader.GetString(1));
+                    id = reader.GetInt32(3);
                 }
                 if (player.Name != "")
                 {
                     lobby.AddPlayer(player);
-                    query = $"INSERT INTO `LobbyPlayer`(`LobbyId`, `PlayerId`) VALUES ({lobby.Id},{player.SteamId})";
+                    query = $"INSERT INTO `LobbyPlayer`(`LobbyId`, `PlayerId`) VALUES ({lobby.Id},{id})";
                     connection.Close();
                     connection.Open();
                     var cmd2 = new MySqlCommand(query, connection);

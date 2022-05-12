@@ -7,7 +7,7 @@ namespace SteamBingoGame
     {
         public string SteamId { get; set; }
         public string Name { get; set; }
-        public string Pic { get; set; }
+        public byte[] Pic { get; set; }
         public Dictionary<string, double> BeginStats;
         public Dictionary<string, double> Stats;
 
@@ -52,7 +52,9 @@ namespace SteamBingoGame
                 string test = (string)data.SelectToken("response.players[0].avatarfull");
                 if (test != "")
                 {
-                    Pic = test;
+                    var webClient = new WebClient();
+                    byte[] imageBytes = webClient.DownloadData(test);
+                    Pic = imageBytes;
                     return true;
                 }
             }

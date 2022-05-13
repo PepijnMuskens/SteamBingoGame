@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MySql.Data.MySqlClient;
+using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Text.Json;
 
 namespace SteamBingoGame
 {
@@ -15,12 +17,18 @@ namespace SteamBingoGame
         private bool ValidId = false;
         private bool Loading = true;
 
+        private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
+        private MySqlConnection connection;
+        private string query;
+
         public Player(string steamid, string name)
         {
             SteamId = steamid;
             Name = name;
             BeginStats = new Dictionary<string, double>();
             Stats = new Dictionary<string, double>();
+
+            connection = new MySqlConnection(connectionString);
         }
 
         public async Task<bool> CheckSteamid()
@@ -71,10 +79,12 @@ namespace SteamBingoGame
             {
                 HttpClient client = new HttpClient();
                 string response = await client.GetStringAsync(Url + SteamId);
-                
+                string fakeResponse = await client.GetStringAsync("https://api.npoint.io/f81c7c0323f3f885cffa");
+
                 ValidId = true;
                 Loading = false;
                 return response;
+                //return fakeResponse;
             }
             catch
             {
@@ -83,6 +93,22 @@ namespace SteamBingoGame
                 return "";
             }
             
+        }
+
+        public async Task<int> Update()
+        {
+            try
+            {
+                connection.Open();
+                query = $"UPDATE `Player` SET `BeginStats`='{JsonSerializer.Serialize(BeginStats)}' WHERE `Steamid` = '{SteamId}' AND `Name` = '{Name}'";
+                var cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteScalar();
+            }
+            catch
+            {
+                return 0;
+            }
+            return 1;
         }
     }
 }

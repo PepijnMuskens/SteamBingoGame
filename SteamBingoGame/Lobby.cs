@@ -93,6 +93,7 @@ namespace SteamBingoGame
             await CreateBoard();
             foreach(Player player in Players)
             {
+                player.BeginStats = new Dictionary<string, double>();
                 HttpClient client = new HttpClient();
                 string stats = await player.GetStatsString();
                 for (int i = 0; i < Board.Count(); i++)
@@ -105,6 +106,7 @@ namespace SteamBingoGame
                         player.BeginStats.Add(challenge.statName, test);
                     }
                 }
+                player.Update();
             }
             Open = false;
             return;
@@ -126,6 +128,35 @@ namespace SteamBingoGame
                 }
             }
 
+        }
+        
+        public async Task UpdateBoard()
+        {
+            if (Open) return;
+            foreach (Player player in Players)
+            {
+                HttpClient client = new HttpClient();
+                string stats = await player.GetStatsString();
+                for (int i = 0; i < Board.Count(); i++)
+                {
+                    for (int j = 0; j < Board[i].Count; j++)
+                    {
+                        Challenge challenge = Board[i][j];
+                        JObject data = JObject.Parse(stats);
+                        double value = (double)data.SelectToken("playerstats.stats[?(@.name == '" + challenge.statName + "')].value");
+                        player.Stats[challenge.statName] = value;
+                        if(value >= player.BeginStats[challenge.statName] + challenge.value)
+                        {
+                            if (!Board[i][j].Players.Contains(player))
+                            {
+                                Board[i][j].Players.Add(player);
+                            }
+                        }
+                    }
+                }
+            }
+            Open = false;
+            return;
         }
 
         private async void GetChallenges(int id)

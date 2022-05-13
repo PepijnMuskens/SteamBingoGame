@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace SteamBingoGame.Controllers
 {
@@ -44,6 +46,7 @@ namespace SteamBingoGame.Controllers
                         reader.GetInt32(0),
                         reader.GetInt32(2),
                         reader.GetBoolean(1));
+                    lobby.Board = System.Text.Json.JsonSerializer.Deserialize<List<List<Challenge>>>(reader.GetString(3));
                     
                 }
                 connection.Close();
@@ -63,13 +66,21 @@ namespace SteamBingoGame.Controllers
             try
             {
                 connection.Open();
-                query = $"SELECT Player.Steamid, Player.Name, Player.Pic FROM `LobbyPlayer` INNER JOIN Player ON LobbyPlayer.PlayerId = Player.Id WHERE `LobbyId` = {id}";
+                query = $"SELECT Player.Steamid, Player.Name, Player.Pic, Player.BeginStats FROM `Player` WHERE `LobbyId` = {id}";
                 var cmd = new MySqlCommand(query, connection);
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
                     Player player = new Player(reader.GetString(0), reader.GetString(1));
                     player.Pic = (byte[])reader.GetValue(2);
+                    try
+                    {
+                        player.BeginStats = JsonConvert.DeserializeObject<Dictionary<string, double>>(reader.GetString(3));
+                    }
+                    catch
+                    {
+
+                    }
                     players.Add(player);
                 }
             }
@@ -83,59 +94,24 @@ namespace SteamBingoGame.Controllers
 
         [EnableCors("CorsPolicy")]
         [HttpGet("AddPlayer")]
-        public Lobby AddPlayer(int lobbyid, long playerid)
+        public async Task<Lobby> AddPlayer(int lobbyid, string name, string steamid)
         {
             int id = 0;
             Lobby lobby = GetLobby(lobbyid);
-            Player player = new Player("","");
+            Player player = new Player(steamid,name);
             if (lobby == null) return null;
+            if (lobby.AddPlayer(player) != 1) return null;
+            await player.GetPic();
             try
             {
                 connection.Open();
-                query = $"SELECT * FROM `Player` WHERE SteamId = {playerid}";
-                var cmd = new MySqlCommand(query, connection);
-                var reader = cmd.ExecuteReader();
-                while (reader.Read())
-                {
-                    player = new Player(
-                        reader.GetString(0),
-                        reader.GetString(1));
-                    id = reader.GetInt32(3);
-                }
-                if (player.Name != "")
-                {
-                    lobby.AddPlayer(player);
-                    query = $"INSERT INTO `LobbyPlayer`(`LobbyId`, `PlayerId`) VALUES ({lobby.Id},{id})";
-                    connection.Close();
-                    connection.Open();
-                    var cmd2 = new MySqlCommand(query, connection);
-                    cmd2.ExecuteScalar();
-                }
-
-
-            }
-            catch
-            {
-
-            }
-            connection.Close();
-            return lobby;
-        }
-        [EnableCors("CorsPolicy")]
-        [HttpPost("CreatePlayer")]
-        public async Task<Player> CreatePlayer(string name, string steamid)
-        {
-            Player player = new Player(steamid, name);
-            if(await player.CheckSteamid()) await player.GetPic();
-
-            try
-            {
-                connection.Open();
-                query = $"INSERT INTO `Player`(`Steamid`, `Name`, `Pic`) VALUES (@steamid, @name, @pic)";
+                lobby.AddPlayer(player);
+                query = $"INSERT INTO `Player`(`Steamid`, `Name`, `Pic`, `LobbyId`) VALUES (@steamid, @name, @pic, @lobbyid)";
                 var cmd = new MySqlCommand(query, connection);
                 cmd.Parameters.AddWithValue("steamid", player.SteamId);
                 cmd.Parameters.AddWithValue("name", player.Name);
                 cmd.Parameters.AddWithValue("pic", player.Pic);
+                cmd.Parameters.AddWithValue("lobbyid", lobbyid);
                 cmd.ExecuteScalar();
             }
             catch
@@ -143,18 +119,69 @@ namespace SteamBingoGame.Controllers
 
             }
             connection.Close();
-            return player;
+            return lobby;
+        }
+        [EnableCors("CorsPolicy")]  
+        [HttpPost("CreatePlayer")]
+        public async Task<Player> CreatePlayer(string name, string steamid)
+        {
+            Player player = new Player(steamid, name);
             
+            {
+                try
+                {
+                    connection.Open();
+                    query = $"INSERT INTO `Player`(`Steamid`, `Name`, `Pic`) VALUES (@steamid, @name, @pic)";
+                    var cmd = new MySqlCommand(query, connection);
+                    cmd.Parameters.AddWithValue("steamid", player.SteamId);
+                    cmd.Parameters.AddWithValue("name", player.Name);
+                    cmd.Parameters.AddWithValue("pic", player.Pic);
+                    cmd.ExecuteScalar();
+                }
+                catch
+                {
+
+                }
+                connection.Close();
+            }
+            return player;
         }
 
         [EnableCors("CorsPolicy")]
         [HttpGet("StartGame")]
         public async Task<Lobby> StartGame(int lobbyid)
         {
-            Lobby lobby = Main.LobbyContainer.Lobbys.Find(l => l.Id == lobbyid);
+            Lobby lobby = GetLobby(lobbyid);
             if (lobby == null) return null;
             await lobby.StartGame();
+            Update(lobby);
             return lobby;
+        }
+        [EnableCors("CorsPolicy")]
+        [HttpGet("Update")]
+        public async Task<Lobby> Update(int lobbyid)
+        {
+            Lobby lobby = GetLobby(lobbyid);
+            if (lobby == null) return null;
+            await lobby.UpdateBoard();
+            Update(lobby);
+            return lobby;
+        }
+
+        private int Update(Lobby lobby)
+        {
+            try
+            {
+                connection.Open();
+                query = $"UPDATE `Lobby` SET `Id`={lobby.Id},`Open`={lobby.Open},`Board`='{System.Text.Json.JsonSerializer.Serialize(lobby.Board)}' WHERE `Id` = {lobby.Id}";
+                var cmd = new MySqlCommand(query, connection);
+                cmd.ExecuteScalar();
+            }
+            catch
+            {
+                return 0;
+            }
+            return 1;
         }
     }
 }

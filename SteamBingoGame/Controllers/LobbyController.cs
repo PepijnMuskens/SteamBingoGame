@@ -94,13 +94,14 @@ namespace SteamBingoGame.Controllers
 
         [EnableCors("CorsPolicy")]
         [HttpGet("AddPlayer")]
-        public async Task<Lobby> AddPlayer(int lobbyid, string name, string steamid)
+        public async Task<Lobby> AddPlayer(int lobbyid, string name, string steamid, int gameid)
         {
             int id = 0;
             Lobby lobby = GetLobby(lobbyid);
             Player player = new Player(steamid,name);
+            if (!await player.CheckSteamid(gameid)) return lobby;
             if (lobby == null) return null;
-            if (lobby.AddPlayer(player) != 1) return null;
+            if (lobby.AddPlayer(player) != 1) return lobby;
             await player.GetPic();
             try
             {

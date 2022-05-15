@@ -31,15 +31,13 @@ namespace SteamBingoGame
             connection = new MySqlConnection(connectionString);
         }
 
-        public async Task<bool> CheckSteamid()
+        public async Task<bool> CheckSteamid(int gameid)
         {
             try
             {
                 HttpClient client = new HttpClient();
-                string response = await client.GetStringAsync("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=B28FAD6C2B1A54EA2342EA465206F5A7&steamids=" + SteamId);
-                JObject data = JObject.Parse(response);
-                int test = (int)data.SelectToken("response.players[0].profilestate");
-                if (test == 1)
+                string response = await client.GetStringAsync("http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=" + gameid + "&key=B28FAD6C2B1A54EA2342EA465206F5A7&steamid=" + SteamId);
+                if (response.Length > 50)
                 {
                     return true;
                 }
@@ -79,7 +77,7 @@ namespace SteamBingoGame
             {
                 HttpClient client = new HttpClient();
                 string response = await client.GetStringAsync(Url + SteamId);
-                string fakeResponse = await client.GetStringAsync("https://api.npoint.io/f81c7c0323f3f885cffa");
+                //string fakeResponse = await client.GetStringAsync("https://api.npoint.io/f81c7c0323f3f885cffa");
 
                 ValidId = true;
                 Loading = false;

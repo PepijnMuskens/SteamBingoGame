@@ -162,7 +162,7 @@ namespace SteamBingoGame
         private async void GetChallenges(int id)
         {
             HttpClient Client = new HttpClient();
-            var challengelist = await Client.GetStringAsync("https://i437675.luna.fhict.nl/steambingo/getchallengelist?id=" + id);
+            var challengelist = await Client.GetStringAsync("https://steambingogame20220512121421.azurewebsites.net/steambingo/getchallengelist?id=" + id);
             try
             {
                 Challengelist = new Challengelist();

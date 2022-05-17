@@ -12,6 +12,7 @@
 
     public class Challengelist
     {
+        public int gameId { get; set; }
         public int id { get; set; }
         public string name { get; set; } = "";
         public int maxCardSize { get; set; }

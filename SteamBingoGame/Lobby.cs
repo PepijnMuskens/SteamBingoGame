@@ -95,7 +95,7 @@ namespace SteamBingoGame
             {
                 player.BeginStats = new Dictionary<string, double>();
                 HttpClient client = new HttpClient();
-                string stats = await player.GetStatsString();
+                string stats = await player.GetStatsString(Challengelist.gameId);
                 for (int i = 0; i < Board.Count(); i++)
                 {
                     for (int j = 0; j < Board[i].Count; j++)
@@ -136,7 +136,7 @@ namespace SteamBingoGame
             foreach (Player player in Players)
             {
                 HttpClient client = new HttpClient();
-                string stats = await player.GetStatsString();
+                string stats = await player.GetStatsString(Challengelist.gameId);
                 for (int i = 0; i < Board.Count(); i++)
                 {
                     for (int j = 0; j < Board[i].Count; j++)

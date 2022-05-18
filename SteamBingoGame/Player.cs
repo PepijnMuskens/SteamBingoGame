@@ -76,13 +76,12 @@ namespace SteamBingoGame
             try
             {
                 HttpClient client = new HttpClient();
-                string response = await client.GetStringAsync(Url[0]+ gameid + Url[1] + SteamId);
-                //string fakeResponse = await client.GetStringAsync("https://api.npoint.io/f81c7c0323f3f885cffa");
+                //string response = await client.GetStringAsync(Url[0]+ gameid + Url[1] + SteamId);
+                string response = await client.GetStringAsync("https://api.npoint.io/f81c7c0323f3f885cffa");
 
                 ValidId = true;
                 Loading = false;
                 return response;
-                //return fakeResponse;
             }
             catch
             {

@@ -30,7 +30,7 @@ namespace SteamBingoGame.Controllers
 
         [EnableCors("CorsPolicy")]
         [HttpGet("GetLobby")]
-        public Lobby GetLobby(int id)
+        public async Task<Lobby> GetLobby(int id)
         {
             Lobby lobby = new Lobby(0, 0, false);
             try
@@ -57,6 +57,11 @@ namespace SteamBingoGame.Controllers
                 
             }
             connection.Close();
+            if (!lobby.Open)
+            {
+                await lobby.UpdateBoard();
+                Update(lobby);
+            }
             return lobby;
         }
 
@@ -97,7 +102,7 @@ namespace SteamBingoGame.Controllers
         public async Task<Lobby> AddPlayer(int lobbyid, string name, string steamid, int gameid)
         {
             int id = 0;
-            Lobby lobby = GetLobby(lobbyid);
+            Lobby lobby = await GetLobby(lobbyid);
             Player player = new Player(steamid,name);
             if (!await player.CheckSteamid(gameid)) return lobby;
             if (lobby == null) return null;
@@ -152,7 +157,7 @@ namespace SteamBingoGame.Controllers
         [HttpGet("StartGame")]
         public async Task<Lobby> StartGame(int lobbyid)
         {
-            Lobby lobby = GetLobby(lobbyid);
+            Lobby lobby = await GetLobby(lobbyid);
             if (lobby == null) return null;
             await lobby.StartGame();
             Update(lobby);
@@ -162,8 +167,8 @@ namespace SteamBingoGame.Controllers
         [HttpGet("Update")]
         public async Task<Lobby> Update(int lobbyid)
         {
-            Lobby lobby = GetLobby(lobbyid);
-            if (lobby == null) return null;
+            Lobby lobby = await GetLobby(lobbyid);
+            if (lobby.Id == 0) return null;
             await lobby.UpdateBoard();
             Update(lobby);
             return lobby;

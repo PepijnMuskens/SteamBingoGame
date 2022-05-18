@@ -147,7 +147,7 @@ namespace SteamBingoGame
                         player.Stats[challenge.statName] = value;
                         if(value >= player.BeginStats[challenge.statName] + challenge.value)
                         {
-                            if (!Board[i][j].Players.Contains(player))
+                            if (Board[i][j].Players.Find(p => p.Name == player.Name) == null)
                             {
                                 Board[i][j].Players.Add(player);
                             }

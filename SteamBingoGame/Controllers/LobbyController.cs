@@ -13,7 +13,7 @@ namespace SteamBingoGame.Controllers
     {
         private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
         private MySqlConnection connection;
-        private string query;
+        private string query = "";
 
         public LobbyController()
         {
@@ -24,8 +24,33 @@ namespace SteamBingoGame.Controllers
         [HttpGet("CreateLobby")]
         public Lobby CreateLobby(int id)
         {
-            Lobby lobby = new Lobby(id);
-            return lobby;
+            Random random = new Random();
+            try
+            {
+                connection.Open();
+                while (true)
+                {
+                    int lobbyid = random.Next(999, 10000);
+                    query = $"SELECT Id FROM `Lobby` WHERE `Id` = {lobbyid}";
+                    var cmd = new MySqlCommand(query, connection);
+                    if (cmd.ExecuteScalar() == null)
+                    {
+                        Lobby lobby = new Lobby(lobbyid, id);
+                        query = $"INSERT INTO `Lobby`(`Id`, `Open`, `Challengelistid`) VALUES ({lobbyid},1,{id})";
+                        connection.Close();
+                        connection.Open();
+                        var cmd2 = new MySqlCommand(query, connection);
+                        cmd2.ExecuteNonQuery();
+                        return lobby;
+
+                    }
+                }
+
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         [EnableCors("CorsPolicy")]
@@ -35,7 +60,6 @@ namespace SteamBingoGame.Controllers
             Lobby lobby = new Lobby(0, 0, false);
             try
             {
-                
                 connection.Open();
                 query = $"SELECT * FROM `Lobby` WHERE Id = {id}";
                 var cmd = new MySqlCommand(query, connection);

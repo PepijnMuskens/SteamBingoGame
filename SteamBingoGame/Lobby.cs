@@ -9,6 +9,7 @@ namespace SteamBingoGame
         public int Id { get; set; }
         public bool Open { get; set; }
         public List<Player> Players { get; set; }
+        public List<Player> Winners { get; set; }
         public int ChallengeListId { get; set; }
         public Challengelist Challengelist { get; set; }
         public List<List<Challenge>> Board { get; set; }
@@ -38,6 +39,7 @@ namespace SteamBingoGame
                 var cmd2 = new MySqlCommand(query, connection);
                 cmd2.ExecuteNonQuery();
                 Players = new List<Player>();
+                Winners = new List<Player>();
                 Open = true;
                 ChallengeListId = id;
                 Board = new List<List<Challenge>>();
@@ -61,6 +63,7 @@ namespace SteamBingoGame
             ChallengeListId= chid;
             Open = open;
             Players = new List<Player>();
+            Winners = new List<Player>();
             while (wait)
             {
 
@@ -154,9 +157,35 @@ namespace SteamBingoGame
                         }
                     }
                 }
+                CheckWinner(player);
             }
             Open = false;
             return;
+        }
+
+        private void CheckWinner(Player player)
+        {
+            if (Winners.Contains(player)) return;
+            //fill tempboard
+            List<List<bool>> tempboard = new List<List<bool>>();
+            for (int i = 0; i < Board.Count(); i++)
+            {
+                tempboard.Add(new List<bool> { false, false ,false });
+                for(int j = 0; j < Board[i].Count; j++)
+                {
+                    if (Board[i][j].Players.Contains(Board[i][j].Players.Find(p => p.Name == player.Name)))   tempboard[i][j] = true;
+                }
+            }
+
+            //check horizontal
+            foreach(List<bool> row in tempboard)
+            {
+                if (!row.Contains(false))
+                {
+                    Winners.Add(player);
+                    return;
+                }
+            }
         }
 
         private async void GetChallenges(int id)

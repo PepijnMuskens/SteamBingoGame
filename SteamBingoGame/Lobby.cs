@@ -16,7 +16,7 @@ namespace SteamBingoGame
 
         private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
         private MySqlConnection connection;
-        private string query;
+        private string query = "";
         private bool wait = true;
         public Lobby(int id)
         {
@@ -28,7 +28,7 @@ namespace SteamBingoGame
                 GetChallenges(id);
                 connection.Open();
                 Random random = new Random();
-                while(true)
+                while (true)
                 {
                     Id = random.Next(1000, 10000);
                     query = $"SELECT Id FROM `Lobby` WHERE Id = {Id} AND Open = 1";
@@ -60,7 +60,7 @@ namespace SteamBingoGame
             wait = true;
             GetChallenges(chid);
             Id = lobbyid;
-            ChallengeListId= chid;
+            ChallengeListId = chid;
             Open = open;
             Players = new List<Player>();
             Winners = new List<Player>();
@@ -68,6 +68,14 @@ namespace SteamBingoGame
             {
 
             }
+        }
+        public Lobby(int lobbyid, int chid)
+        {
+            Id = lobbyid;
+            ChallengeListId = chid;
+            Players = new List<Player>();
+            Challengelist = new Challengelist();
+            Board = new List<List<Challenge>>();
         }
 
         /// <summary>
@@ -92,9 +100,9 @@ namespace SteamBingoGame
 
         public async Task StartGame()
         {
-            if(!Open) return;
+            if (!Open) return;
             await CreateBoard();
-            foreach(Player player in Players)
+            foreach (Player player in Players)
             {
                 player.BeginStats = new Dictionary<string, double>();
                 HttpClient client = new HttpClient();
@@ -105,7 +113,7 @@ namespace SteamBingoGame
                     {
                         Challenge challenge = Board[i][j];
                         JObject data = JObject.Parse(stats);
-                        double test = (double)data.SelectToken("playerstats.stats[?(@.name == '"+ challenge.statName +"')].value");
+                        double test = (double)data.SelectToken("playerstats.stats[?(@.name == '" + challenge.statName + "')].value");
                         player.BeginStats.Add(challenge.statName, test);
                     }
                 }
@@ -120,7 +128,7 @@ namespace SteamBingoGame
             int size = (int)Math.Sqrt(Challengelist.challenges.Count());
             Board = new List<List<Challenge>>();
             Random random = new Random();
-            for(int i = 0; i < size; i++)
+            for (int i = 0; i < size; i++)
             {
                 Board.Add(new List<Challenge>());
                 for (int j = 0; j < size; j++)
@@ -132,7 +140,7 @@ namespace SteamBingoGame
             }
 
         }
-        
+
         public async Task UpdateBoard()
         {
             if (Open) return;
@@ -148,7 +156,7 @@ namespace SteamBingoGame
                         JObject data = JObject.Parse(stats);
                         double value = (double)data.SelectToken("playerstats.stats[?(@.name == '" + challenge.statName + "')].value");
                         player.Stats[challenge.statName] = value;
-                        if(value >= player.BeginStats[challenge.statName] + challenge.value)
+                        if (value >= player.BeginStats[challenge.statName] + challenge.value)
                         {
                             if (Board[i][j].Players.Find(p => p.Name == player.Name) == null)
                             {
@@ -197,7 +205,7 @@ namespace SteamBingoGame
                 Challengelist = new Challengelist();
                 Challengelist = JsonSerializer.Deserialize<Challengelist>(challengelist);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
             }
             wait = false;

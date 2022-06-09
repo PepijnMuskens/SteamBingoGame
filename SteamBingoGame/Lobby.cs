@@ -171,8 +171,9 @@ namespace SteamBingoGame
             return;
         }
 
-        private void CheckWinner(Player player)
+        public void CheckWinner(Player player)
         {
+            bool winner = true;
             if (Winners.Contains(player)) return;
             //fill tempboard
             List<List<bool>> tempboard = new List<List<bool>>();
@@ -193,6 +194,53 @@ namespace SteamBingoGame
                     Winners.Add(player);
                     return;
                 }
+            }
+            //check vertical
+            for(int j = 0;j < tempboard.Count(); j++)
+            {
+                winner = true;
+                for(int i = 0; i < tempboard.Count; i++)
+                {
+                    if(tempboard[i][j] == false){
+                        winner = false;
+                        break;
+                    }
+                }
+                if (winner)
+                {
+                    Winners.Add(player);
+                    return;
+                }
+            }
+            //check diagonal
+            winner = true;
+            for (int i = 0; i < tempboard.Count(); i++)
+            {
+                if (tempboard[i][tempboard.Count - 1 - i] == false)
+                {
+                    winner = false;
+                    break;
+                }
+            }
+            if (winner == true)
+            {
+                Winners.Add(player);
+                return;
+            }
+            //other diagonal
+            winner = true;
+            for(int i = 0; i < tempboard.Count(); i++)
+            {
+                if(tempboard[i][i] == false)
+                {
+                    winner =false;
+                    break;
+                }
+            }
+            if (winner == true)
+            {
+                Winners.Add(player);
+                return;
             }
         }
 

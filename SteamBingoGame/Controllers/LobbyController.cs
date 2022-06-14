@@ -57,7 +57,7 @@ namespace SteamBingoGame.Controllers
         [HttpGet("GetLobby")]
         public async Task<Lobby> GetLobby(int id)
         {
-            Lobby lobby = new Lobby(0, 0, false);
+            Lobby lobby = new Lobby(0, 0);
             try
             {
                 connection.Open();

@@ -13,7 +13,6 @@ namespace SteamBingoGame.Controllers
     {
         private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
         private MySqlConnection connection;
-        private string query = "";
 
         public LobbyController()
         {
@@ -31,7 +30,7 @@ namespace SteamBingoGame.Controllers
                 while (true)
                 {
                     int lobbyid = random.Next(999, 10000);
-                    query = $"SELECT Id FROM `Lobby` WHERE `Id` = {lobbyid}";
+                    string query = $"SELECT Id FROM `Lobby` WHERE `Id` = {lobbyid}";
                     var cmd = new MySqlCommand(query, connection);
                     if (cmd.ExecuteScalar() == null)
                     {
@@ -61,7 +60,7 @@ namespace SteamBingoGame.Controllers
             try
             {
                 connection.Open();
-                query = $"SELECT * FROM `Lobby` WHERE Id = {id}";
+                string query = $"SELECT * FROM `Lobby` WHERE Id = {id}";
                 var cmd = new MySqlCommand(query, connection);
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -78,7 +77,7 @@ namespace SteamBingoGame.Controllers
             }
             catch
             {
-                
+                connection.Close();
             }
             connection.Close();
             if (!lobby.Open)
@@ -95,7 +94,7 @@ namespace SteamBingoGame.Controllers
             try
             {
                 connection.Open();
-                query = $"SELECT Player.Steamid, Player.Name, Player.Pic, Player.BeginStats FROM `Player` WHERE `LobbyId` = {id}";
+                string query = $"SELECT Player.Steamid, Player.Name, Player.Pic, Player.BeginStats FROM `Player` WHERE `LobbyId` = {id}";
                 var cmd = new MySqlCommand(query, connection);
                 var reader = cmd.ExecuteReader();
                 while (reader.Read())
@@ -136,7 +135,7 @@ namespace SteamBingoGame.Controllers
             {
                 connection.Open();
                 lobby.AddPlayer(player);
-                query = $"INSERT INTO `Player`(`Steamid`, `Name`, `Pic`, `LobbyId`) VALUES (@steamid, @name, @pic, @lobbyid)";
+                string query = $"INSERT INTO `Player`(`Steamid`, `Name`, `Pic`, `LobbyId`) VALUES (@steamid, @name, @pic, @lobbyid)";
                 var cmd = new MySqlCommand(query, connection);
                 cmd.Parameters.AddWithValue("steamid", player.SteamId);
                 cmd.Parameters.AddWithValue("name", player.Name);
@@ -161,7 +160,7 @@ namespace SteamBingoGame.Controllers
                 try
                 {
                     connection.Open();
-                    query = $"INSERT INTO `Player`(`Steamid`, `Name`, `Pic`) VALUES (@steamid, @name, @pic)";
+                    string query = $"INSERT INTO `Player`(`Steamid`, `Name`, `Pic`) VALUES (@steamid, @name, @pic)";
                     var cmd = new MySqlCommand(query, connection);
                     cmd.Parameters.AddWithValue("steamid", player.SteamId);
                     cmd.Parameters.AddWithValue("name", player.Name);
@@ -192,7 +191,10 @@ namespace SteamBingoGame.Controllers
         public async Task<Lobby> Update(int lobbyid)
         {
             Lobby lobby = await GetLobby(lobbyid);
-            if (lobby.Id == 0) return null;
+            if (lobby.Id == 0)
+            {
+                return null;
+            }
             await lobby.UpdateBoard();
             Update(lobby);
             return lobby;
@@ -203,7 +205,7 @@ namespace SteamBingoGame.Controllers
             try
             {
                 connection.Open();
-                query = $"UPDATE `Lobby` SET `Id`={lobby.Id},`Open`={lobby.Open},`Board`='{System.Text.Json.JsonSerializer.Serialize(lobby.Board)}' WHERE `Id` = {lobby.Id}";
+                string query = $"UPDATE `Lobby` SET `Id`={lobby.Id},`Open`={lobby.Open},`Board`='{System.Text.Json.JsonSerializer.Serialize(lobby.Board)}' WHERE `Id` = {lobby.Id}";
                 var cmd = new MySqlCommand(query, connection);
                 cmd.ExecuteScalar();
             }

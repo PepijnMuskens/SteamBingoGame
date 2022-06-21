@@ -13,13 +13,10 @@ namespace SteamBingoGame
         public Dictionary<string, double> BeginStats;
         public Dictionary<string, double> Stats;
 
-        private string[] Url = { "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=", "&key=B28FAD6C2B1A54EA2342EA465206F5A7&steamid=" };
-        private bool ValidId = false;
-        private bool Loading = true;
+        private readonly string[] Url = { "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=", "&key=B28FAD6C2B1A54EA2342EA465206F5A7&steamid=" };
 
-        private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
+        private readonly string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
         private MySqlConnection connection;
-        private string query;
 
         public Player(string steamid, string name)
         {
@@ -44,7 +41,7 @@ namespace SteamBingoGame
             }
             catch
             {
-                
+                return false;
             }
             return false;
         }
@@ -78,15 +75,10 @@ namespace SteamBingoGame
                 HttpClient client = new HttpClient();
                 //string response = await client.GetStringAsync(Url[0]+ gameid + Url[1] + SteamId);
                 string response = await client.GetStringAsync("https://api.npoint.io/f81c7c0323f3f885cffa");
-
-                ValidId = true;
-                Loading = false;
                 return response;
             }
             catch
             {
-                ValidId = false;
-                Loading = false;
                 return "";
             }
             
@@ -97,7 +89,7 @@ namespace SteamBingoGame
             try
             {
                 connection.Open();
-                query = $"UPDATE `Player` SET `BeginStats`='{JsonSerializer.Serialize(BeginStats)}' WHERE `Steamid` = '{SteamId}' AND `Name` = '{Name}'";
+                string query = $"UPDATE `Player` SET `BeginStats`='{JsonSerializer.Serialize(BeginStats)}' WHERE `Steamid` = '{SteamId}' AND `Name` = '{Name}'";
                 var cmd = new MySqlCommand(query, connection);
                 cmd.ExecuteScalar();
             }

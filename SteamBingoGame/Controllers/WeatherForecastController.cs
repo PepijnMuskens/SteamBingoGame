@@ -12,12 +12,6 @@ namespace SteamBingoGame.Controllers
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-
-        public WeatherForecastController()
-        {
-
-        }
-
         [EnableCors("CorsPolicy")]
         [HttpGet(Name = "GetWeatherForecast")]
         public Lobby Get(int id)

@@ -117,12 +117,14 @@ namespace SteamBingoGame
 
         public async Task StartGame()
         {
-            if (!Open) return;
+            if (!Open)
+            {
+                return;
+            }
             await CreateBoard();
             foreach (Player player in Players)
             {
                 player.BeginStats = new Dictionary<string, double>();
-                HttpClient client = new HttpClient();
                 string stats = await player.GetStatsString(Challengelist.gameId);
                 for (int i = 0; i < Board.Count(); i++)
                 {
@@ -263,7 +265,7 @@ namespace SteamBingoGame
             }
         }
 
-        private async void GetChallenges(int id)
+        private async Task GetChallenges(int id)
         {
             HttpClient Client = new HttpClient();
             var challengelist = await Client.GetStringAsync("https://localhost:7219/steambingo/getchallengelist?id=" + id);

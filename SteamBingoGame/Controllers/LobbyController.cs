@@ -11,8 +11,8 @@ namespace SteamBingoGame.Controllers
     [EnableCors("CorsPolicy")]
     public class LobbyController : ControllerBase
     {
-        private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
-        private MySqlConnection connection;
+        private readonly string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
+        private readonly MySqlConnection connection;
 
         public LobbyController()
         {
@@ -56,11 +56,7 @@ namespace SteamBingoGame.Controllers
         [HttpGet("GetLobby")]
         public async Task<Lobby> GetLobby(int id)
         {
-<<<<<<< HEAD
             Lobby lobby = null;
-=======
-            Lobby lobby = new Lobby(0, 0);
->>>>>>> 6353fc13ac859d5146c29a12bac803758c64e786
             try
             {
                 connection.Open();
@@ -110,7 +106,7 @@ namespace SteamBingoGame.Controllers
                     }
                     catch
                     {
-
+                        //player stats not found
                     }
                     players.Add(player);
                 }
@@ -127,12 +123,20 @@ namespace SteamBingoGame.Controllers
         [HttpGet("AddPlayer")]
         public async Task<Lobby> AddPlayer(int lobbyid, string name, string steamid, int gameid)
         {
-            int id = 0;
             Lobby lobby = await GetLobby(lobbyid);
             Player player = new Player(steamid,name);
-            if (!await player.CheckSteamid(gameid)) return lobby;
-            if (lobby == null) return null;
-            if (lobby.AddPlayer(player) != 1) return lobby;
+            if (!await player.CheckSteamid(gameid))
+            {
+                return lobby;
+            }
+            if (lobby == null)
+            {
+                return null;
+            }
+            if (lobby.AddPlayer(player) != 1)
+            {
+                return lobby;
+            }
             await player.GetPic();
             try
             {

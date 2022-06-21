@@ -63,7 +63,7 @@ namespace SteamBingoGame
             }
             catch
             {
-
+                return false;
             }
             return false;
         }

@@ -152,7 +152,7 @@ namespace SteamBingoGame.Controllers
             }
             catch
             {
-
+                //no connection
             }
             connection.Close();
             return lobby;
@@ -176,7 +176,7 @@ namespace SteamBingoGame.Controllers
                 }
                 catch
                 {
-
+                    //no connection
                 }
                 connection.Close();
             }
@@ -221,9 +221,9 @@ namespace SteamBingoGame.Controllers
             }
             catch
             {
-                return 0;
+                return;
             }
-            return 1;
+            return;
         }
     }
 }

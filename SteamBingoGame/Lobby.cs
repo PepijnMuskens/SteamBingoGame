@@ -72,7 +72,7 @@ namespace SteamBingoGame
             Winners = new List<Player>();
             while (wait)
             {
-
+                //wait
             }
         }
         public Lobby(int lobbyid, int chid)
@@ -161,10 +161,12 @@ namespace SteamBingoGame
 
         public async Task UpdateBoard()
         {
-            if (Open) return;
+            if (Open)
+            {
+                return; 
+            }
             foreach (Player player in Players)
             {
-                HttpClient client = new HttpClient();
                 string stats = await player.GetStatsString(Challengelist.gameId);
                 for (int i = 0; i < Board.Count(); i++)
                 {
@@ -186,13 +188,15 @@ namespace SteamBingoGame
                 CheckWinner(player);
             }
             Open = false;
-            return;
         }
 
         public void CheckWinner(Player player)
         {
             bool winner = true;
-            if (Winners.Contains(player)) return;
+            if (Winners.Contains(player))
+            {
+                return;
+            }
             //fill tempboard
             List<List<bool>> tempboard = new List<List<bool>>();
             for (int i = 0; i < Board.Count(); i++)
@@ -276,6 +280,7 @@ namespace SteamBingoGame
             }
             catch (Exception ex)
             {
+                wait = false;
             }
             wait = false;
         }

@@ -16,7 +16,7 @@ namespace SteamBingoGame
         private readonly string[] Url = { "http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=", "&key=B28FAD6C2B1A54EA2342EA465206F5A7&steamid=" };
 
         private readonly string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
-        private MySqlConnection connection;
+        private readonly MySqlConnection connection;
 
         public Player(string steamid, string name)
         {

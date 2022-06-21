@@ -265,7 +265,6 @@ namespace SteamBingoGame
             if (winner == true)
             {
                 Winners.Add(player);
-                return;
             }
         }
 

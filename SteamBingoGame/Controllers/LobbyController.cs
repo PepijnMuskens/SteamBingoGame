@@ -223,7 +223,6 @@ namespace SteamBingoGame.Controllers
             {
                 return;
             }
-            return;
         }
     }
 }

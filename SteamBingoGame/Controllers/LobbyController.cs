@@ -57,7 +57,7 @@ namespace SteamBingoGame.Controllers
         [HttpGet("GetLobby")]
         public async Task<Lobby> GetLobby(int id)
         {
-            Lobby lobby = new Lobby(0, 0, false);
+            Lobby lobby = null;
             try
             {
                 connection.Open();
@@ -71,7 +71,6 @@ namespace SteamBingoGame.Controllers
                         reader.GetInt32(2),
                         reader.GetBoolean(1));
                     lobby.Board = System.Text.Json.JsonSerializer.Deserialize<List<List<Challenge>>>(reader.GetString(3));
-                    
                 }
                 connection.Close();
                 lobby.Players = Getplayers(id);

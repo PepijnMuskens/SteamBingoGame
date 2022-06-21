@@ -14,9 +14,8 @@ namespace SteamBingoGame
         public Challengelist Challengelist { get; set; }
         public List<List<Challenge>> Board { get; set; }
 
-        private string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
-        private MySqlConnection connection;
-        private string query = "";
+        private readonly string connectionString = "Server=am1.fcomet.com;Uid=steambin_steambin;Database=steambin_Data;Pwd=Appels1peren0";
+        private readonly MySqlConnection connection;
         private bool wait = true;
         public Lobby(int id)
         {
@@ -28,12 +27,16 @@ namespace SteamBingoGame
                 GetChallenges(id);
                 connection.Open();
                 Random random = new Random();
+                string query = "";
                 while (true)
                 {
                     Id = random.Next(1000, 10000);
                     query = $"SELECT Id FROM `Lobby` WHERE Id = {Id} AND Open = 1";
                     var cmd = new MySqlCommand(query, connection);
-                    if (cmd.ExecuteScalar() == null) break;
+                    if (cmd.ExecuteScalar() == null)
+                    {
+                        break;
+                    }
                 }
                 query = $"INSERT INTO `Lobby`(`Id`, `Open`, `Challengelistid`) VALUES ({Id},1,{id})";
                 var cmd2 = new MySqlCommand(query, connection);
@@ -47,7 +50,10 @@ namespace SteamBingoGame
                 {
 
                 }
-                if (Challengelist.name == null) Challengelist = new Challengelist();
+                if (Challengelist.name == null)
+                {
+                    Challengelist = new Challengelist();
+                }
             }
             catch
             {
@@ -71,9 +77,11 @@ namespace SteamBingoGame
         }
         public Lobby(int lobbyid, int chid)
         {
+            Open = true;
             Id = lobbyid;
             ChallengeListId = chid;
             Players = new List<Player>();
+            Winners = new List<Player>();
             Challengelist = new Challengelist();
             Board = new List<List<Challenge>>();
         }
@@ -91,9 +99,18 @@ namespace SteamBingoGame
         /// </returns>
         public int AddPlayer(Player player)
         {
-            if (Players.Find(p => p.SteamId == player.SteamId) != null) return 0;
-            if (Players.Find(p => p.Name == player.Name) != null) return -1;
-            if (!Open) return -2;
+            if (Players.Find(p => p.SteamId == player.SteamId) != null)
+            {
+                return 0;
+            }
+            if (Players.Find(p => p.Name == player.Name) != null)
+            {
+                return -1;
+            }
+            if (!Open) 
+            {
+                return -2;
+            }
             Players.Add(player);
             return 1;
         }
@@ -120,7 +137,6 @@ namespace SteamBingoGame
                 player.Update();
             }
             Open = false;
-            return;
         }
 
         private async Task CreateBoard()
@@ -182,7 +198,10 @@ namespace SteamBingoGame
                 tempboard.Add(new List<bool> { false, false ,false });
                 for(int j = 0; j < Board[i].Count; j++)
                 {
-                    if (Board[i][j].Players.Contains(Board[i][j].Players.Find(p => p.Name == player.Name)))   tempboard[i][j] = true;
+                    if (Board[i][j].Players.Contains(Board[i][j].Players.Find(p => p.Name == player.Name)))
+                    {
+                        tempboard[i][j] = true;
+                    }
                 }
             }
 

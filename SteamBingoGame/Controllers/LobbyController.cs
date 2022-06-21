@@ -56,7 +56,7 @@ namespace SteamBingoGame.Controllers
         [HttpGet("GetLobby")]
         public async Task<Lobby> GetLobby(int id)
         {
-            Lobby lobby = null;
+            Lobby lobby = new Lobby(id);
             try
             {
                 connection.Open();
@@ -113,7 +113,7 @@ namespace SteamBingoGame.Controllers
             }
             catch
             {
-                
+                //error
             }
             connection.Close();
             return players;
@@ -188,7 +188,10 @@ namespace SteamBingoGame.Controllers
         public async Task<Lobby> StartGame(int lobbyid)
         {
             Lobby lobby = await GetLobby(lobbyid);
-            if (lobby == null) return null;
+            if (lobby == null)
+            {
+                return null;
+            }
             await lobby.StartGame();
             Update(lobby);
             return lobby;
@@ -207,7 +210,7 @@ namespace SteamBingoGame.Controllers
             return lobby;
         }
 
-        private int Update(Lobby lobby)
+        private void Update(Lobby lobby)
         {
             try
             {

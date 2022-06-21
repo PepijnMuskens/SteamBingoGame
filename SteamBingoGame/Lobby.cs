@@ -48,7 +48,7 @@ namespace SteamBingoGame
                 Board = new List<List<Challenge>>();
                 while (wait)
                 {
-
+                    //wait
                 }
                 if (Challengelist.name == null)
                 {
